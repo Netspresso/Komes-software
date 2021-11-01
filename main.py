@@ -3,23 +3,13 @@ from PyQt5.QtWidgets import QApplication, QCheckBox, QLabel, QPushButton, QRadio
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QCursor
+from PyQt5.QtCore import pyqtSlot
 
 widgets = {
+    "price": [],
     "logo": [],
-    "button": [],
+    "buttonCAE": [],
 }
-
-# Stored pricelists
-with open('NFX_V.txt', 'r') as NFX_prices:
-    contents = NFX_prices.read()
-    NFX_V_pricing = ast.literal_eval(contents)
-
-with open('NFX_M.txt', 'r') as NFX_prices:
-    contents = NFX_prices.read()
-    NFX_M_pricing = ast.literal_eval(contents)
-
-# for line in lines:
-#     NFX_V_pricing[]
 
 app = QApplication(sys.argv)
 window = QWidget()
@@ -32,6 +22,49 @@ window.setStyleSheet(
 grid = QGridLayout()
 
 
+def clear_widgets():
+    ''' hide all existing widgets and erase
+        them from the global dictionary'''
+    for widget in widgets:
+        if widgets[widget] != []:
+            widgets[widget][-1].hide()
+        for i in range(0, len(widgets[widget])):
+            widgets[widget].pop()
+
+
+def show_frame1():
+    '''display welcome frame'''
+    clear_widgets()
+    welcome_frame()
+
+
+@pyqtSlot()
+def print_allert():
+    print('dziala')
+
+
+def start_choosing():
+    '''display choosing frame'''
+    clear_widgets()
+    choosing_frame()
+
+
+def create_button(label):
+    """ Function that handle creating buttons with styling """
+    button = QPushButton(label)
+    button.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button.setStyleSheet("*{border: 4px solid '#BC006C';" +
+                         "border-radius: 15px;" + "font-size: 25px;" +
+                         "color: 'black';" + "padding: 5px 0;" +
+                         "margin: 5px 10px;}" +
+                         "*:hover{background: '#BC006C';" + "color: white;}")
+    return button
+
+
+def get_button_text(button):
+    return button.text()
+
+
 def welcome_frame():
     """Function that is responsible for the welcome screen. The frame consists of buttons responsible for navigating to another frame and for displaying choosen modules to offer"""
 
@@ -41,7 +74,6 @@ def welcome_frame():
     logo.setPixmap(image)
     logo.setAlignment(QtCore.Qt.AlignCenter)
     logo.setStyleSheet("margin-top: 20px;")
-    widgets["logo"].append(logo)
 
     # Headers
     leftHeader = QLabel("Wybierz program")
@@ -52,38 +84,41 @@ def welcome_frame():
                              "margin: auto;")
 
     # Button widget
-    buttonNFX = QPushButton("Midas NFX")
-    buttonMF = QPushButton("Midas MeshFree")
-    buttonCAE = QPushButton("CAE LIMIT")
-    buttonSDC = QPushButton("SDC Verifier")
-    buttonMW = QPushButton("DEP MeshWorks")
-    buttons = [buttonNFX, buttonMF, buttonCAE, buttonSDC, buttonMW]
+    buttonNFX = create_button("Midas NFX")
+    buttonMF = create_button("Midas MeshFree")
+    buttonCAE = create_button("CAE LIMIT")
+    buttonSDC = create_button("SDC Verifier")
+    buttonMW = create_button("DEP MeshWorks")
 
-    for button in buttons:
+    # buttons callback
+    # buttonCAE.clicked.connect(choosing_frame("CAE LIMIT"))
+    buttonCAE.clicked.connect(print_allert)
+    widgets["buttonCAE"].append(buttonCAE)
 
-        button.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
-        button.setStyleSheet("*{border: 4px solid '#BC006C';" +
-                             "border-radius: 15px;" + "font-size: 25px;" +
-                             "color: 'white';" + "padding: 5px 0;" +
-                             "margin: 5px 10px;}" +
-                             "*:hover{background: '#BC006C';}")
-        widgets["button"].append(button)
-
-    grid.addWidget(widgets["logo"][-1], 0, 2)
+    grid.addWidget(logo, 0, 2)
     grid.addWidget(leftHeader, 1, 0)
     grid.addWidget(rightHeader, 1, 3)
     grid.addWidget(buttonNFX, 2, 0)
     grid.addWidget(buttonMF, 3, 0)
-    grid.addWidget(buttonCAE, 4, 0)
+    grid.addWidget(widgets["buttonCAE"][-1], 4, 0)
     grid.addWidget(buttonSDC, 5, 0)
     grid.addWidget(buttonMW, 6, 0)
 
 
-# welcome_frame1()
-
-
-def choosing_frame():
+def choosing_frame(choosen):
     """ Funcion that handle displaying detail module choosing tool for the particular software """
+
+    # clearance
+    clear_widgets()
+
+    # Stored pricelists
+    with open('prices/versions/{}.txt'.format(choosen), 'r') as v_prices:
+        contents = v_prices.read()
+        V_pricing = ast.literal_eval(contents)
+
+    with open('prices/modules/{}.txt'.format(choosen), 'r') as v_prices:
+        contents = v_prices.read()
+        M_pricing = ast.literal_eval(contents)
 
     # Display Logo
     image = QPixmap("logo.jpg")
@@ -91,7 +126,6 @@ def choosing_frame():
     logo.setPixmap(image)
     logo.setAlignment(QtCore.Qt.AlignCenter)
     logo.setStyleSheet("margin-top: 20px;")
-    widgets["logo"].append(logo)
 
     # Radio butons that enable user to choose between perpetual and one-year license
     perpetual_license = QRadioButton("licencja wieczysta")
@@ -101,6 +135,12 @@ def choosing_frame():
     leftHeader = QLabel("Wersja")
     mediumHeader = QLabel("Moduł")
     rightHeader = QLabel("Cena")
+
+    # Exception - CAE LIMIT doesn't have versions and modules but has modules and interfaces
+    if choosen == "CAE":
+        mediumHeader = QLabel("Interfejs")
+        leftHeader = QLabel("Moduł")
+
     headers = [
         leftHeader, mediumHeader, rightHeader, perpetual_license,
         yearly_license
@@ -111,7 +151,7 @@ def choosing_frame():
 
     # print(versions)
 
-    grid.addWidget(widgets["logo"][-1], 0, 1)
+    grid.addWidget(logo, 0, 1)
     grid.addWidget(perpetual_license, 1, 0)
     grid.addWidget(yearly_license, 1, 2)
     grid.addWidget(leftHeader, 2, 0)
@@ -120,9 +160,9 @@ def choosing_frame():
 
     # Versions;
     versions = []
-    for version in NFX_V_pricing:
+    for version in V_pricing:
         versions.append(QCheckBox(version))
-        iterator = list(NFX_V_pricing.keys()).index(version)
+        iterator = list(V_pricing.keys()).index(version)
         versions[iterator].setStyleSheet("font-size: 22px;" +
                                          "margin: 10px 35px;")
         grid.addWidget(versions[iterator], iterator + 3, 0)
@@ -130,9 +170,9 @@ def choosing_frame():
     # Modules;
     modules = []
 
-    for module in NFX_M_pricing:
+    for module in M_pricing:
         modules.append(QCheckBox(module))
-        iterator = list(NFX_M_pricing.keys()).index(module)
+        iterator = list(M_pricing.keys()).index(module)
         modules[iterator].setStyleSheet("font-size: 22px;" +
                                         "margin: 10px 35px;")
         grid.addWidget(modules[iterator], iterator + 3, 1)
@@ -161,7 +201,9 @@ def choosing_frame():
     grid.addWidget(add_to_offer_button, 5, 2)
 
 
-choosing_frame()
+welcome_frame()
+
+# choosing_frame()
 
 window.setLayout(grid)
 
