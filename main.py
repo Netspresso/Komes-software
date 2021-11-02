@@ -8,7 +8,18 @@ from PyQt5.QtCore import pyqtSlot
 widgets = {
     "price": [],
     "logo": [],
+    'leftHeader': [],
+    'mediumHeader': [],
+    'rightHeader': [],
+    'perpetual_license': [],
+    'yearly_license': [],
+}
+buttons = {
+    "buttonNFX": [],
+    "buttonMF": [],
     "buttonCAE": [],
+    "buttonSDC": [],
+    "buttonMW": [],
 }
 
 app = QApplication(sys.argv)
@@ -25,6 +36,13 @@ grid = QGridLayout()
 def clear_widgets():
     ''' hide all existing widgets and erase
         them from the global dictionary'''
+
+    for button in buttons:
+        if buttons[button] != []:
+            buttons[button][-1].hide()
+        for i in range(0, len(buttons[button])):
+            buttons[button].pop()
+
     for widget in widgets:
         if widgets[widget] != []:
             widgets[widget][-1].hide()
@@ -43,10 +61,34 @@ def show_frame1():
 #     print('dziala')
 
 
+def start_choosing_NFX():
+    '''display choosing frame for Midas NFX'''
+    clear_widgets()
+    choosing_frame('NFX')
+
+
+def start_choosing_MF():
+    '''display choosing frame for Midas MeshFree'''
+    clear_widgets()
+    choosing_frame('MF')
+
+
 def start_choosing_CAE():
-    '''display choosing frame foe CAE Limit'''
+    '''display choosing frame for CAE Limit'''
     clear_widgets()
     choosing_frame('CAE')
+
+
+def start_choosing_SDC():
+    '''display choosing frame for SDC Verifier'''
+    clear_widgets()
+    choosing_frame('SDC')
+
+
+def start_choosing_MW():
+    '''display choosing frame for MeshWorks'''
+    clear_widgets()
+    choosing_frame('MW')
 
 
 def create_button(label):
@@ -74,6 +116,7 @@ def welcome_frame():
     logo.setPixmap(image)
     logo.setAlignment(QtCore.Qt.AlignCenter)
     logo.setStyleSheet("margin-top: 20px;")
+    widgets['logo'].append(logo)
 
     # Headers
     leftHeader = QLabel("Wybierz program")
@@ -91,18 +134,31 @@ def welcome_frame():
     buttonMW = create_button("DEP MeshWorks")
 
     # buttons callback
-    # buttonCAE.clicked.connect(choosing_frame("CAE LIMIT"))
+    buttonNFX.clicked.connect(start_choosing_NFX)
+    buttonMF.clicked.connect(start_choosing_MF)
     buttonCAE.clicked.connect(start_choosing_CAE)
-    widgets["buttonCAE"].append(buttonCAE)
+    buttonSDC.clicked.connect(start_choosing_SDC)
+    buttonMW.clicked.connect(start_choosing_MW)
 
-    grid.addWidget(logo, 0, 2)
-    grid.addWidget(leftHeader, 1, 0)
-    grid.addWidget(rightHeader, 1, 3)
-    grid.addWidget(buttonNFX, 2, 0)
-    grid.addWidget(buttonMF, 3, 0)
-    grid.addWidget(widgets["buttonCAE"][-1], 4, 0)
-    grid.addWidget(buttonSDC, 5, 0)
-    grid.addWidget(buttonMW, 6, 0)
+    # Storing buttons into dictionary
+    buttons["buttonCAE"].append(buttonCAE)
+    buttons["buttonNFX"].append(buttonNFX)
+    buttons["buttonMF"].append(buttonMF)
+    buttons["buttonSDC"].append(buttonSDC)
+    buttons["buttonMW"].append(buttonMW)
+
+    #Storing headers into dictionary
+    widgets["leftHeader"].append(leftHeader)
+    widgets["rightHeader"].append(rightHeader)
+
+    grid.addWidget(widgets['logo'][-1], 0, 2)
+    grid.addWidget(widgets['leftHeader'][-1], 1, 0)
+    grid.addWidget(widgets['rightHeader'][-1], 1, 3)
+
+    iterator = 2
+    for key in buttons:
+        grid.addWidget(buttons[key][-1], iterator, 0)
+        iterator += 1
 
 
 def choosing_frame(choosen):
@@ -130,6 +186,7 @@ def choosing_frame(choosen):
     logo.setPixmap(image)
     logo.setAlignment(QtCore.Qt.AlignCenter)
     logo.setStyleSheet("margin-top: 20px;")
+    widgets['logo'].append(logo)
 
     # Radio butons that enable user to choose between perpetual and one-year license
     perpetual_license = QRadioButton("licencja wieczysta")
@@ -155,7 +212,7 @@ def choosing_frame(choosen):
 
     # print(versions)
 
-    grid.addWidget(logo, 0, 1)
+    grid.addWidget(widgets['logo'][-1], 0, 2)
     grid.addWidget(perpetual_license, 1, 0)
     grid.addWidget(yearly_license, 1, 2)
     grid.addWidget(leftHeader, 2, 0)
