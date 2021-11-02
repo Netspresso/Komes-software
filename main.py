@@ -1,4 +1,4 @@
-import sys, ast
+import sys, ast, os
 from PyQt5.QtWidgets import QApplication, QCheckBox, QLabel, QPushButton, QRadioButton, QVBoxLayout, QWidget, QGridLayout  #, QFileDia
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtCore, QtGui
@@ -38,15 +38,15 @@ def show_frame1():
     welcome_frame()
 
 
-@pyqtSlot()
-def print_allert():
-    print('dziala')
+# @pyqtSlot()
+# def print_allert():
+#     print('dziala')
 
 
-def start_choosing():
-    '''display choosing frame'''
+def start_choosing_CAE():
+    '''display choosing frame foe CAE Limit'''
     clear_widgets()
-    choosing_frame()
+    choosing_frame('CAE')
 
 
 def create_button(label):
@@ -92,7 +92,7 @@ def welcome_frame():
 
     # buttons callback
     # buttonCAE.clicked.connect(choosing_frame("CAE LIMIT"))
-    buttonCAE.clicked.connect(print_allert)
+    buttonCAE.clicked.connect(start_choosing_CAE)
     widgets["buttonCAE"].append(buttonCAE)
 
     grid.addWidget(logo, 0, 2)
@@ -108,16 +108,20 @@ def welcome_frame():
 def choosing_frame(choosen):
     """ Funcion that handle displaying detail module choosing tool for the particular software """
 
-    # clearance
-    clear_widgets()
-
     # Stored pricelists
-    with open('prices/versions/{}.txt'.format(choosen), 'r') as v_prices:
+    # pricelist relative path
+    script_dir = os.path.dirname(__file__)  #<-- absolute dir the script is in
+    rel_path_V = "prices\\versions\\{}.txt".format(choosen)
+    abs_file_path_V = os.path.join(script_dir, rel_path_V)
+    rel_path_M = "prices\\modules\\{}.txt".format(choosen)
+    abs_file_path_M = os.path.join(script_dir, rel_path_M)
+
+    with open(abs_file_path_V, 'r') as v_prices:
         contents = v_prices.read()
         V_pricing = ast.literal_eval(contents)
 
-    with open('prices/modules/{}.txt'.format(choosen), 'r') as v_prices:
-        contents = v_prices.read()
+    with open(abs_file_path_M, 'r') as m_prices:
+        contents = m_prices.read()
         M_pricing = ast.literal_eval(contents)
 
     # Display Logo
